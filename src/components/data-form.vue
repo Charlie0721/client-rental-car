@@ -41,12 +41,7 @@
                 <label class="form-control-label px-3"
                   >Precio Base<span class="text-danger"> *</span></label
                 >
-                <input
-                  type="number"
-                  step="0.01"
-                  v-model="basePrice"
-                  disabled
-                />
+                <input type="number" step="0.01" v-model="basePrice" disabled />
               </div>
               <div class="form-group col-sm-6 flex-column d-flex">
                 <label class="form-control-label px-3"
@@ -54,14 +49,25 @@
                 >
                 <input type="number" v-model="car.numberOfDays" />
               </div>
+              <div class="form-group col-sm-6 flex-column d-flex" v-if="car.carType==='FURGONETA'">
+                <label class="form-control-label px-3"
+                  >Peso Maximo Autorizado <span class="text-danger"> </span></label
+                >
+                <input type="number" step="0.01" v-model="pma" />
+              </div>
             </div>
 
             <div class="row justify-content-between text-left">
               <div class="form-group col-12 flex-column d-flex">
                 <label class="form-control-label px-3"
-                  >Total a pagar<span class="text-danger"> *</span></label
+                  >Total a pagar<span class="text-danger"></span></label
                 >
-                <input type="number"  disabled v-model="totalToPay" step="0.01" />
+                <input
+                  type="number"
+                  disabled
+                  v-model="totalToPay"
+                  step="0.01"
+                />
               </div>
             </div>
             <div class="row justify-content-end">
@@ -91,38 +97,48 @@ export default defineComponent({
       variablePrices: 0 as number | undefined,
       totalToPay: 0 as number,
       basePrice: 50 as number,
+      pma:0 as  number
     };
   },
   mounted() {
-    this.getDataCar();
+    this.getDataToCars();
   },
   methods: {
-    async getDataCar() {
-      const response = await CalculatePrices.getDataCar();
+    async getDataToCars() {
+      const response = await CalculatePrices.getDataCars();
       this.cars = response.data;
       console.log(this.cars);
     },
     sendDataCar() {
       try {
+        if (this.car.carType === "COCHE") {
+          this.variablePrices = 1.5;
+         this.totalToPay = this.car.numberOfDays*(this.basePrice + this.variablePrices) ;
+         
+        }
+        if (this.car.carType === "MICROBUS") {
+          this.variablePrices = 2;
+        this.totalToPay =
+        this.car.numberOfDays*(this.basePrice + this.variablePrices) ;
+        }
+        if (this.car.carType === "FURGONETA") {
+        this.variablePrices = 20;
+        this.totalToPay =
+        this.car.numberOfDays*(this.basePrice + this.variablePrices)*this.pma;
+ 
+        }
+        if (this.car.carType === "CAMION") {
+          this.variablePrices = 2;
+        this.totalToPay =
+        this.car.numberOfDays*(this.basePrice + this.variablePrices) ;
+        }
         let carPLate = this.car.plate.toUpperCase();
         this.car.plate = carPLate;
         this.car.variablePrices = this.variablePrices;
         this.car.totalToPay = this.totalToPay;
         this.car.basePrice = this.basePrice;
-        if (this.car.carType === "COCHE") {
-            this.variablePrices=1.5
-            this.totalToPay = this.basePrice + this.variablePrices *(this.car.numberOfDays)
-            console.log(this.car);
-            return
-        }
-        // if (this.car.carType === "MICROBUS") {
-        // }
-        // if (this.car.carType === "FURGONETA") {
-        // }
-        // if (this.car.carType === "CAMION") {
-        // } 
-      
-       
+        console.log(this.car);
+        
       } catch (error) {
         alert(error);
         console.log(error);
