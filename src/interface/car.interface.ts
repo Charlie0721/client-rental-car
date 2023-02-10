@@ -1,5 +1,5 @@
 export interface ICar {
-
+    id: number;
     plate: string;
     carType: string;
     basePrice: number;

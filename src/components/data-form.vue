@@ -49,10 +49,13 @@
                 >
                 <input type="number" v-model="car.numberOfDays" />
               </div>
-              <div class="form-group col-sm-6 flex-column d-flex" v-if="car.carType==='FURGONETA'">
+              <div
+                class="form-group col-sm-6 flex-column d-flex"
+                v-if="car.carType === 'FURGONETA' || car.carType === 'CAMION'"
+              >
                 <label class="form-control-label px-3"
-                  >Peso Maximo Autorizado <span class="text-danger"> </span></label
-                >
+                  >Peso Maximo Autorizado <span class="text-danger"> </span
+                ></label>
                 <input type="number" step="0.01" v-model="pma" />
               </div>
             </div>
@@ -60,8 +63,8 @@
             <div class="row justify-content-between text-left">
               <div class="form-group col-12 flex-column d-flex">
                 <label class="form-control-label px-3"
-                  >Total a pagar<span class="text-danger"></span></label
-                >
+                  >Total a pagar<span class="text-danger"></span
+                ></label>
                 <input
                   type="number"
                   disabled
@@ -80,8 +83,25 @@
           </form>
         </div>
       </div>
-      <pre>{{ car }} </pre>
     </div>
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th scope="col">PLACA</th>
+          <th scope="col">TIPO VEHICULO</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr
+          v-for="car in cars"
+          :key="car.id"
+          @click="viewDetail(car.plate)"
+        >
+          <th scope="row">{{ car.plate }}</th>
+          <td>{{ car.carType }}</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </template>
 
@@ -97,7 +117,7 @@ export default defineComponent({
       variablePrices: 0 as number | undefined,
       totalToPay: 0 as number,
       basePrice: 50 as number,
-      pma:0 as  number
+      pma: 0 as number,
     };
   },
   mounted() {
@@ -107,46 +127,48 @@ export default defineComponent({
     async getDataToCars() {
       const response = await CalculatePrices.getDataCars();
       this.cars = response.data;
-      console.log(this.cars);
     },
-    sendDataCar() {
+    viewDetail(plate: string) {
+      this.$router.push(`/${plate}` );
+    },
+    async sendDataCar() {
       try {
         if (this.car.carType === "COCHE") {
           this.variablePrices = 1.5;
-         this.totalToPay = this.car.numberOfDays*(this.basePrice + this.variablePrices) ;
-         
+          this.totalToPay =
+            this.car.numberOfDays * (this.basePrice + this.variablePrices);
         }
         if (this.car.carType === "MICROBUS") {
           this.variablePrices = 2;
-        this.totalToPay =
-        this.car.numberOfDays*(this.basePrice + this.variablePrices) ;
+          this.totalToPay =
+            this.car.numberOfDays * (this.basePrice + this.variablePrices);
         }
         if (this.car.carType === "FURGONETA") {
-        this.variablePrices = 20;
-        this.totalToPay =
-        this.car.numberOfDays*(this.basePrice + this.variablePrices)*this.pma;
- 
+          this.variablePrices = 20;
+          this.totalToPay =
+            this.car.numberOfDays *
+            (this.basePrice + this.variablePrices) *
+            this.pma;
         }
         if (this.car.carType === "CAMION") {
           this.variablePrices = 2;
-        this.totalToPay =
-        this.car.numberOfDays*(this.basePrice + this.variablePrices) ;
+          this.totalToPay =
+            this.car.numberOfDays * (this.basePrice + this.variablePrices);
         }
         let carPLate = this.car.plate.toUpperCase();
         this.car.plate = carPLate;
         this.car.variablePrices = this.variablePrices;
         this.car.totalToPay = this.totalToPay;
         this.car.basePrice = this.basePrice;
-        console.log(this.car);
-        
+
+        const saveData = await CalculatePrices.sendData(this.car);
+        console.log(saveData);
       } catch (error) {
         alert(error);
         console.log(error);
       }
-    },
-    getDataCars() {
-      console.log("getDataCars");
-    },
+    }
+    
   },
 });
 </script>
